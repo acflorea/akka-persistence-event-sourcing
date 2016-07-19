@@ -14,8 +14,10 @@ class ServiceActor extends Actor with ActorLogging with ProjectRoute with UserRo
 
   override implicit def executionContext = context.dispatcher
 
+  // Actor in charge with all Project Aggregates
   val projectAggregateManager = context.actorOf(ProjectAggregateManager.props)
 
+  // Actor in charge with all User Aggregates
   val userAggregateManager = context.actorOf(UserAggregateManager.props)
 
   def receive =

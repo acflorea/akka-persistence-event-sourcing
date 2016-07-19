@@ -29,7 +29,7 @@ object AggregateRoot {
   /**
    * Specifies how many events should be processed before new snapshot is taken.
    */
-  val eventsPerSnapshot = 10
+  val eventsPerSnapshot = 3
 }
 
 /**

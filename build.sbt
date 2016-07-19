@@ -13,7 +13,7 @@ resolvers ++= Seq(
   "spray repo" at "http://repo.spray.io"
 )
 
-seq(Revolver.settings: _*)
+Seq(Revolver.settings: _*)
 
 scalacOptions ++= Seq("-feature", "-unchecked", "-deprecation", "-encoding", "utf8")
 
@@ -43,7 +43,14 @@ libraryDependencies ++= {
     "org.scalatest" %% "scalatest" % "2.2.1" % "test",
     "io.spray" %% "spray-testkit" % "1.3.1" % "test",
     "com.github.t3hnar" %% "scala-bcrypt" % "2.4",
-    "com.typesafe.akka" %% "akka-persistence-cassandra" % "0.10"
+    "com.typesafe.akka" %% "akka-persistence-cassandra" % "0.10",
+    // Titan
+    "com.thinkaurelius.titan" % "titan-core" % "1.0.0",
+    "com.thinkaurelius.titan" % "titan-cassandra" % "1.0.0",
+    "com.thinkaurelius.titan" % "titan-es" % "1.0.0",
+    "com.tinkerpop.blueprints" % "blueprints-core" % "2.6.0",
+    "com.tinkerpop" % "frames" % "2.6.0",
+    "com.tinkerpop" % "pipes" % "2.6.0"
   )
 }
 
