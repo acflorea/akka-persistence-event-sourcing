@@ -11,10 +11,15 @@ import scala.concurrent.Future
  * Created by aflorea on 18.07.2016.
  */
 class TitanSnapshotStore(cfg: Config) extends SnapshotStore with ActorLogging {
+
+  val config = new TitanSnapshotStoreConfig(cfg)
+
   override def loadAsync(
                           persistenceId: String,
                           criteria: SnapshotSelectionCriteria
                         ): Future[Option[SelectedSnapshot]] = {
+
+    val testOpen = config.graph.isOpen
 
     Future.successful(None)
   }
