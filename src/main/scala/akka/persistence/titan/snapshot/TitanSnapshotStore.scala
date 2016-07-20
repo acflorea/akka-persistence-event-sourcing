@@ -3,8 +3,11 @@ package akka.persistence.titan.snapshot
 import akka.actor.ActorLogging
 import akka.persistence.{SelectedSnapshot, SnapshotMetadata, SnapshotSelectionCriteria}
 import akka.persistence.snapshot.SnapshotStore
+import com.thinkaurelius.titan.core.attribute.Cmp
+import org.apache.tinkerpop.gremlin.process.traversal.Order
 import com.typesafe.config.Config
-
+import akka.persistence.titan.TitanCommons._
+import scala.collection.JavaConverters._
 import scala.concurrent.Future
 
 /**
@@ -14,12 +17,22 @@ class TitanSnapshotStore(cfg: Config) extends SnapshotStore with ActorLogging {
 
   val config = new TitanSnapshotStoreConfig(cfg)
 
+  import config._
+
   override def loadAsync(
                           persistenceId: String,
                           criteria: SnapshotSelectionCriteria
                         ): Future[Option[SelectedSnapshot]] = {
 
-    val testOpen = config.graph.isOpen
+    val testOpen = graph.isOpen
+
+    val snapshotVertex = graph.query()
+      .has(PERSISTENCE_ID_KEY, persistenceId)
+      .has(TIMESTAMP_KEY, Cmp.LESS_THAN_EQUAL, criteria.maxSequenceNr)
+      .has(SEQUENCE_NR_KEY, Cmp.LESS_THAN_EQUAL, criteria.maxSequenceNr)
+      .orderBy(TIMESTAMP_KEY, Order.decr)
+      .orderBy(SEQUENCE_NR_KEY, Order.decr)
+      .vertices().asScala.headOption
 
     Future.successful(None)
   }
