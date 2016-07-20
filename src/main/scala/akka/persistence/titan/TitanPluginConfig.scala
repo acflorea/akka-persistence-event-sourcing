@@ -1,6 +1,7 @@
 package akka.persistence.titan
 
 import com.thinkaurelius.titan.core.{TitanFactory, TitanGraph}
+import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph
 import com.typesafe.config.Config
 import org.apache.commons.configuration.BaseConfiguration
 import org.slf4j.LoggerFactory
@@ -12,7 +13,7 @@ import scala.collection.JavaConverters._
  */
 class TitanPluginConfig(conf: Config) {
 
-  final val logger = LoggerFactory.getLogger(getClass.getName);
+  final val logger = LoggerFactory.getLogger(getClass.getName)
 
   lazy val graph = initGraph
 
@@ -28,7 +29,7 @@ class TitanPluginConfig(conf: Config) {
       graphConfiguration.addProperty(entry._1, entry._2)
     }
 
-    TitanFactory.open(graphConfiguration);
+    TitanFactory.open(graphConfiguration)
   }
 
 
