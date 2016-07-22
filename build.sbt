@@ -50,7 +50,8 @@ libraryDependencies ++= {
     "com.thinkaurelius.titan" % "titan-es" % "1.0.0",
     "com.tinkerpop.blueprints" % "blueprints-core" % "2.6.0",
     "com.tinkerpop" % "frames" % "2.6.0",
-    "com.tinkerpop" % "pipes" % "2.6.0"
+    "com.tinkerpop" % "pipes" % "2.6.0",
+    "org.scala-lang.modules" %% "scala-pickling" % "0.10.1"
   )
 }
 

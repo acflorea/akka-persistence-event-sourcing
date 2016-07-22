@@ -9,6 +9,7 @@ import com.typesafe.config.Config
 import akka.persistence.titan.TitanCommons._
 import scala.collection.JavaConverters._
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
  * Created by aflorea on 18.07.2016.
@@ -24,8 +25,6 @@ class TitanSnapshotStore(cfg: Config) extends SnapshotStore with ActorLogging {
                           criteria: SnapshotSelectionCriteria
                         ): Future[Option[SelectedSnapshot]] = {
 
-    val testOpen = graph.isOpen
-
     val snapshotVertex = graph.query()
       .has(PERSISTENCE_ID_KEY, persistenceId)
       .has(TIMESTAMP_KEY, Cmp.LESS_THAN_EQUAL, criteria.maxSequenceNr)
@@ -34,7 +33,18 @@ class TitanSnapshotStore(cfg: Config) extends SnapshotStore with ActorLogging {
       .orderBy(SEQUENCE_NR_KEY, Order.decr)
       .vertices().asScala.headOption
 
-    Future.successful(None)
+    Future {
+      snapshotVertex map {
+        vertex =>
+          val snapshotMetadata = SnapshotMetadata(
+            vertex.property[String](PERSISTENCE_ID_KEY).value(),
+            vertex.property[Long](SEQUENCE_NR_KEY).value(),
+            vertex.property[Long](TIMESTAMP_KEY).value()
+          )
+          // FixMe - load actual object
+          SelectedSnapshot(snapshotMetadata, "Test")
+      }
+    }
   }
 
   override def saveAsync(

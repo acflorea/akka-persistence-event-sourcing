@@ -1,11 +1,11 @@
 package akka.persistence.titan
 
 
+import akka.persistence.titan.TitanCommons._
 import com.thinkaurelius.titan.core.{Cardinality, TitanFactory, TitanGraph}
 import com.typesafe.config.Config
 import org.apache.commons.configuration.BaseConfiguration
 import org.slf4j.LoggerFactory
-import akka.persistence.titan.TitanCommons._
 
 import scala.collection.JavaConverters._
 
@@ -36,10 +36,16 @@ class TitanPluginConfig(conf: Config) {
     val mngmt = _graph.openManagement()
 
     if (!mngmt.containsPropertyKey(TIMESTAMP_KEY)) {
+      logger.debug(s"Creating key $TIMESTAMP_KEY")
       mngmt.makePropertyKey(TIMESTAMP_KEY).dataType(classOf[java.lang.Long]).cardinality(Cardinality.SINGLE).make()
     }
     if (!mngmt.containsPropertyKey(SEQUENCE_NR_KEY)) {
+      logger.debug(s"Creating key $SEQUENCE_NR_KEY")
       mngmt.makePropertyKey(SEQUENCE_NR_KEY).dataType(classOf[java.lang.Long]).cardinality(Cardinality.SINGLE).make()
+    }
+    if (!mngmt.containsPropertyKey(PERSISTENCE_ID_KEY)) {
+      logger.debug(s"Creating key $PERSISTENCE_ID_KEY")
+      mngmt.makePropertyKey(PERSISTENCE_ID_KEY).dataType(classOf[String]).cardinality(Cardinality.SINGLE).make()
     }
     mngmt.commit()
 
