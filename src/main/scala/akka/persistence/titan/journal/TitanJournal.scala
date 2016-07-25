@@ -87,7 +87,14 @@ class TitanJournal(conf: Config) extends AsyncWriteJournal with ActorLogging {
                                       toSequenceNr: Long
                                     ): Future[Unit] = {
 
-    Future.successful()
+    val journalVertices = graph.query()
+      .has(PERSISTENCE_ID_KEY, persistenceId)
+      .has(SEQUENCE_NR_KEY, Cmp.LESS_THAN_EQUAL, toSequenceNr)
+      .vertices().asScala
+
+    Future {
+      journalVertices.map(_.remove())
+    }
   }
 
   override def asyncReplayMessages(

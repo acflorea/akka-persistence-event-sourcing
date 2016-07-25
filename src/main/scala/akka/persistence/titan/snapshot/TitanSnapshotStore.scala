@@ -87,14 +87,35 @@ class TitanSnapshotStore(cfg: Config) extends SnapshotStore with ActorLogging {
                             metadata: SnapshotMetadata
                           ): Future[Unit] = {
 
-    Future.successful()
+
+    val snapshotVertex = graph.query()
+      .has(PERSISTENCE_ID_KEY, metadata.persistenceId)
+      .has(SEQUENCE_NR_KEY, metadata.sequenceNr)
+      .vertices().asScala.headOption
+
+    Future {
+      snapshotVertex.map { vertex =>
+        vertex.remove()
+      }
+    }
+
   }
 
   override def deleteAsync(
                             persistenceId: String, criteria: SnapshotSelectionCriteria
                           ): Future[Unit] = {
 
-    Future.successful()
+    val snapshotVertices = graph.query()
+      .has(PERSISTENCE_ID_KEY, persistenceId)
+      .has(SEQUENCE_NR_KEY, Cmp.GREATER_THAN_EQUAL, criteria.minSequenceNr)
+      .has(SEQUENCE_NR_KEY, Cmp.LESS_THAN_EQUAL, criteria.maxSequenceNr)
+      .has(TIMESTAMP_KEY, Cmp.GREATER_THAN_EQUAL, criteria.minTimestamp)
+      .has(TIMESTAMP_KEY, Cmp.LESS_THAN_EQUAL, criteria.maxTimestamp)
+      .vertices().asScala
+
+    Future {
+      snapshotVertices.map(_.remove())
+    }
   }
 
   override def postStop(): Unit = {
