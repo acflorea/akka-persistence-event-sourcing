@@ -2,19 +2,17 @@ package akka.persistence.titan.snapshot
 
 import akka.actor.ActorLogging
 import akka.persistence.serialization.Snapshot
-import akka.persistence.{SelectedSnapshot, SnapshotMetadata, SnapshotSelectionCriteria}
 import akka.persistence.snapshot.SnapshotStore
-import com.thinkaurelius.titan.core.attribute.Cmp
-import org.apache.tinkerpop.gremlin.process.traversal.Order
-import com.typesafe.config.Config
 import akka.persistence.titan.TitanCommons._
+import akka.persistence.{SelectedSnapshot, SnapshotMetadata, SnapshotSelectionCriteria}
 import akka.serialization.{Serialization, SerializationExtension}
+import com.thinkaurelius.titan.core.attribute.Cmp
+import com.typesafe.config.Config
+import org.apache.tinkerpop.gremlin.process.traversal.Order
 
 import scala.collection.JavaConverters._
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.pickling.Defaults._
-import scala.pickling.json._
+import scala.concurrent.Future
 
 /**
  * Created by aflorea on 18.07.2016.
@@ -34,8 +32,10 @@ class TitanSnapshotStore(cfg: Config) extends SnapshotStore with ActorLogging {
 
     val snapshotVertex = graph.query()
       .has(PERSISTENCE_ID_KEY, persistenceId)
-      .has(TIMESTAMP_KEY, Cmp.LESS_THAN_EQUAL, criteria.maxSequenceNr)
+      .has(SEQUENCE_NR_KEY, Cmp.GREATER_THAN_EQUAL, criteria.minSequenceNr)
       .has(SEQUENCE_NR_KEY, Cmp.LESS_THAN_EQUAL, criteria.maxSequenceNr)
+      .has(TIMESTAMP_KEY, Cmp.GREATER_THAN_EQUAL, criteria.minTimestamp)
+      .has(TIMESTAMP_KEY, Cmp.LESS_THAN_EQUAL, criteria.maxTimestamp)
       .orderBy(TIMESTAMP_KEY, Order.decr)
       .orderBy(SEQUENCE_NR_KEY, Order.decr)
       .vertices().asScala.headOption
@@ -49,11 +49,13 @@ class TitanSnapshotStore(cfg: Config) extends SnapshotStore with ActorLogging {
             vertex.property[Long](TIMESTAMP_KEY).value()
           )
 
-          val pickled = vertex.property[String](PAYLOAD_KEY).value()
-          JSONPickle(pickled).unpickle[Snapshot]
+          val snapshot = serialization.
+            deserialize[Snapshot](
+            vertex.property[Array[Byte]](PAYLOAD_KEY).value(),
+            classOf[Snapshot]
+          ).get
 
-          // FixMe - load actual object
-          SelectedSnapshot(snapshotMetadata, "Test")
+          SelectedSnapshot(snapshotMetadata, snapshot.data)
       }
     }
   }
@@ -67,13 +69,14 @@ class TitanSnapshotStore(cfg: Config) extends SnapshotStore with ActorLogging {
 
       val vertex = graph.addVertex()
       // Keys
-      vertex.property(TIMESTAMP_KEY, System.currentTimeMillis())
       vertex.property(PERSISTENCE_ID_KEY, metadata.persistenceId)
       vertex.property(SEQUENCE_NR_KEY, metadata.sequenceNr)
-      vertex.property(SEQUENCE_NR_KEY, metadata.timestamp)
+      vertex.property(TIMESTAMP_KEY, metadata.timestamp)
 
-      val pickle = snapshot.pickle
-      vertex.property(PAYLOAD_KEY, pickle.value)
+      serialization.serialize(Snapshot(snapshot)) map {
+        vertex.property(PAYLOAD_KEY, _)
+      }
+
       graph.tx().commit()
       log.debug(s"$snapshot persisted OK!")
 
@@ -92,6 +95,10 @@ class TitanSnapshotStore(cfg: Config) extends SnapshotStore with ActorLogging {
                           ): Future[Unit] = {
 
     Future.successful()
+  }
+
+  override def postStop(): Unit = {
+    graph.close()
   }
 }
 

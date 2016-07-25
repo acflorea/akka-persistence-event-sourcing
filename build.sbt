@@ -51,7 +51,8 @@ libraryDependencies ++= {
     "com.tinkerpop.blueprints" % "blueprints-core" % "2.6.0",
     "com.tinkerpop" % "frames" % "2.6.0",
     "com.tinkerpop" % "pipes" % "2.6.0",
-    "org.scala-lang.modules" %% "scala-pickling" % "0.10.1"
+    "org.scala-lang.modules" %% "scala-pickling" % "0.10.1",
+    "com.typesafe.akka" %% "akka-persistence-tck" % akkaVersion % "test"
   )
 }
 
