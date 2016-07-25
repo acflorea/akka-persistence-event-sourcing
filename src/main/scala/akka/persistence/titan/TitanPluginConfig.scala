@@ -1,7 +1,9 @@
 package akka.persistence.titan
 
 
+import akka.actor.ActorSystem
 import akka.persistence.titan.TitanCommons._
+import akka.serialization.{Serialization, SerializationExtension}
 import com.thinkaurelius.titan.core.{Cardinality, TitanFactory, TitanGraph}
 import com.typesafe.config.Config
 import org.apache.commons.configuration.BaseConfiguration
