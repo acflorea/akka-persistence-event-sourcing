@@ -4,8 +4,10 @@ Akka Persistence Event Sourcing backed up by <a href="http://cassandra.apache.or
 Example project with a simple CRUD REST API to a domain model persisted 
 using akka-persistence with event sourcing.
 
-* Uses Cassandra for journal persistence
-* Uses Titan for snapshots persistence - WIP!
+* Uses Titan(Cassandra plus Elasticsearch) for journal persistence
+* Uses Titan(Cassandra plus Elasticsearch) for snapshots persistence
+
+Check <a href="http://search.maven.org/#search%7Cga%7C1%7Cakka-persistence-titan">AKKA Persistence Titan plugin</a>
 
 To start the spray-can server from sbt:
 > re-start
